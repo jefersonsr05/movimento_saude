@@ -1,16 +1,42 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api, type Cliente, type Plano, type FichaSaude } from '../services/api'
+import { InputDataBR } from '../components/InputDataBR'
 
 const TIPOS = ['Cliente', 'Fornecedor', 'Ambos']
 const SEXOS = ['M', 'F', 'Outro']
 const NIVEL = ['Nunca', 'Iniciante', 'Intermediario', 'Avancado']
-const FREQ = ['TresPorSemana', 'CincoPorSemana', 'SeisPorSemana']
+const FREQ = [
+  { value: 'TresPorSemana', label: '3X por semana' },
+  { value: 'CincoPorSemana', label: '5X por semana' },
+  { value: 'SeisPorSemana', label: '6X por semana' },
+]
+
+// Objetivo na academia: valor (API) e label (exibição). Última opção "Outro" libera campo texto.
+const OBJETIVOS_OPCOES = [
+  { value: 'Emagrecimento', label: 'Emagrecimento' },
+  { value: 'GanhoMassaMuscular', label: 'Ganho de massa muscular' },
+  { value: 'CondicionamentoFisico', label: 'Condicionamento físico' },
+  { value: 'SaudeBemEstar', label: 'Saúde e bem-estar' },
+  { value: 'Reabilitacao', label: 'Reabilitação' },
+  { value: 'Outro', label: 'Outro' },
+]
 
 type ClienteForm = Omit<Partial<Cliente>, 'fichaSaude'> & { fichaSaude?: Partial<FichaSaude> }
 
 function cpfMask(v: string) {
   return v.replace(/\D/g, '').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2').slice(0, 14)
+}
+
+function parseObjetivos(objetivos: string | string[] | undefined): string[] {
+  if (!objetivos) return []
+  if (Array.isArray(objetivos)) return objetivos
+  try {
+    const parsed = JSON.parse(objetivos)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return objetivos.trim() ? [objetivos] : []
+  }
 }
 
 export default function Clientes() {
@@ -52,15 +78,8 @@ export default function Clientes() {
     e.preventDefault()
     const cpfLimpo = (form.cpf ?? '').replace(/\D/g, '')
     if (!form.tipo || !form.nomeCompleto || !form.dataNascimento || !form.sexo || !cpfLimpo) return
-    let objetivosFinal = '[]'
-    if (form.fichaSaude?.objetivos) {
-      try {
-        const o = form.fichaSaude.objetivos
-        objetivosFinal = typeof o === 'string' ? (o.trim().startsWith('[') ? o : JSON.stringify([o])) : JSON.stringify(Array.isArray(o) ? o : [])
-      } catch {
-        objetivosFinal = JSON.stringify([String(form.fichaSaude.objetivos)])
-      }
-    }
+    const objetivosArr = parseObjetivos(form.fichaSaude?.objetivos)
+    const objetivosFinal = JSON.stringify(objetivosArr)
     const payload = {
       ...form,
       cpf: cpfLimpo,
@@ -84,12 +103,20 @@ export default function Clientes() {
       <div className="card">
         <h2>{editing ? 'Editar' : 'Novo'} cliente</h2>
         <form onSubmit={submit}>
-          <div className="form-group">
-            <label>Tipo</label>
-            <select value={form.tipo ?? ''} onChange={(e) => setForm({ ...form, tipo: e.target.value })} required>
-              <option value="">Selecione</option>
-              {TIPOS.map((t) => <option key={t} value={t}>{t}</option>)}
-            </select>
+          <div className="form-row form-row-tipo-ativo">
+            <div className="form-group">
+              <label>Tipo</label>
+              <select value={form.tipo ?? ''} onChange={(e) => setForm({ ...form, tipo: e.target.value })} required>
+                <option value="">Selecione</option>
+                {TIPOS.map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-check">
+                <input type="checkbox" checked={form.ativo !== false} onChange={(e) => setForm({ ...form, ativo: e.target.checked })} />
+                <span>Ativo</span>
+              </label>
+            </div>
           </div>
           <div className="form-group">
             <label>Nome completo</label>
@@ -97,7 +124,7 @@ export default function Clientes() {
           </div>
           <div className="form-group">
             <label>Data nascimento</label>
-            <input type="date" value={form.dataNascimento ? form.dataNascimento.toString().slice(0, 10) : ''} onChange={(e) => setForm({ ...form, dataNascimento: e.target.value })} required />
+            <InputDataBR value={form.dataNascimento ? String(form.dataNascimento).slice(0, 10) : ''} onChange={(v) => setForm({ ...form, dataNascimento: v })} required />
           </div>
           <div className="form-group">
             <label>Sexo</label>
@@ -124,9 +151,6 @@ export default function Clientes() {
               <option value="">Nenhum</option>
               {planos?.map((p) => <option key={p.id} value={p.id}>{p.descricao}</option>)}
             </select>
-          </div>
-          <div className="form-group">
-            <label><input type="checkbox" checked={form.ativo !== false} onChange={(e) => setForm({ ...form, ativo: e.target.checked })} /> Ativo</label>
           </div>
           <h3>Ficha de saúde (opcional)</h3>
           <div className="form-group">
@@ -165,12 +189,39 @@ export default function Clientes() {
             {form.fichaSaude?.restricaoMedica && <input placeholder="Qual?" value={form.fichaSaude?.restricaoMedicaQual ?? ''} onChange={(e) => setForm({ ...form, fichaSaude: { ...form.fichaSaude, restricaoMedicaQual: e.target.value } })} />}
           </div>
           <div className="form-group">
-            <label>Objetivo (múltipla escolha - use checkboxes no backend ou texto)</label>
-            <input placeholder='Ex: ["Emagrecimento"]' value={typeof form.fichaSaude?.objetivos === 'string' ? form.fichaSaude.objetivos : JSON.stringify(form.fichaSaude?.objetivos ?? [])} onChange={(e) => setForm({ ...form, fichaSaude: { ...form.fichaSaude, objetivos: e.target.value } })} />
-          </div>
-          <div className="form-group">
-            <label>Objetivo outro</label>
-            <input value={form.fichaSaude?.objetivoOutro ?? ''} onChange={(e) => setForm({ ...form, fichaSaude: { ...form.fichaSaude, objetivoOutro: e.target.value } })} />
+            <label>Objetivo na academia (múltipla escolha)</label>
+            <div className="objetivos-checklist">
+              {OBJETIVOS_OPCOES.map((opt) => {
+                const objetivosArr = parseObjetivos(form.fichaSaude?.objetivos)
+                const checked = objetivosArr.includes(opt.value)
+                return (
+                  <label key={opt.value} className="form-check">
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={(e) => {
+                        const arr = parseObjetivos(form.fichaSaude?.objetivos)
+                        const next = e.target.checked
+                          ? [...arr.filter((v) => v !== opt.value), opt.value]
+                          : arr.filter((v) => v !== opt.value)
+                        setForm({ ...form, fichaSaude: { ...form.fichaSaude, objetivos: JSON.stringify(next) } })
+                      }}
+                    />
+                    <span>{opt.label}</span>
+                  </label>
+                )
+              })}
+            </div>
+            {parseObjetivos(form.fichaSaude?.objetivos).includes('Outro') && (
+              <div className="form-group" style={{ marginTop: '0.5rem' }}>
+                <label>Se escolheu &quot;Outro&quot;, descreva:</label>
+                <input
+                  value={form.fichaSaude?.objetivoOutro ?? ''}
+                  onChange={(e) => setForm({ ...form, fichaSaude: { ...form.fichaSaude, objetivoOutro: e.target.value } })}
+                  placeholder="Descreva o objetivo"
+                />
+              </div>
+            )}
           </div>
           <div className="form-group">
             <label>Nível atividade</label>
@@ -181,7 +232,7 @@ export default function Clientes() {
           <div className="form-group">
             <label>Frequência desejada</label>
             <select value={form.fichaSaude?.frequenciaDesejada ?? ''} onChange={(e) => setForm({ ...form, fichaSaude: { ...form.fichaSaude, frequenciaDesejada: e.target.value } })}>
-              {FREQ.map((f) => <option key={f} value={f}>{f}</option>)}
+              {FREQ.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
             </select>
           </div>
           <button type="submit" className="btn btn-primary">Salvar</button>
@@ -197,7 +248,7 @@ export default function Clientes() {
             {planos?.map((p) => <option key={p.id} value={p.id}>{p.descricao} - R$ {p.valor.toFixed(2)}</option>)}
           </select>
           <label>Data início</label>
-          <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} />
+          <InputDataBR value={dataInicio} onChange={setDataInicio} />
           <button className="btn btn-primary" onClick={() => planoContratar && contratar.mutate({ clienteId: contratarPlano.id, planoId: planoContratar, dataInicio: dataInicio || undefined })}>Contratar</button>
           <button className="btn btn-secondary" onClick={() => setContratarPlano(null)}>Cancelar</button>
         </div>

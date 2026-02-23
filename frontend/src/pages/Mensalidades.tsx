@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api, type Mensalidade, type FormaPagamento } from '../services/api'
+import { InputDataBR } from '../components/InputDataBR'
+import { formatarDataBR } from '../utils/date'
 
 export default function Mensalidades() {
   const [dataInicio, setDataInicio] = useState(new Date().toISOString().slice(0, 7) + '-01')
@@ -45,9 +47,9 @@ export default function Mensalidades() {
       <h1>Mensalidades</h1>
       <div className="card">
         <label>Data início</label>
-        <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} />
+        <InputDataBR value={dataInicio} onChange={setDataInicio} />
         <label>Data fim</label>
-        <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} />
+        <InputDataBR value={dataFim} onChange={setDataFim} />
         <label>Situação</label>
         <select value={situacao} onChange={(e) => setSituacao(e.target.value)}>
           <option value="">Todas</option>
@@ -74,7 +76,7 @@ export default function Mensalidades() {
           </div>
           <div className="form-group">
             <label>Data pagamento</label>
-            <input type="date" value={dataPagamento} onChange={(e) => setDataPagamento(e.target.value)} />
+            <InputDataBR value={dataPagamento} onChange={setDataPagamento} />
           </div>
           <button className="btn btn-primary" onClick={() => formaPagamentoId && registrarPagamento.mutate({
             id: pagamentoModal.id,
@@ -95,7 +97,7 @@ export default function Mensalidades() {
             <tr key={m.id}>
               <td>{m.cliente?.nomeCompleto}</td>
               <td>{m.plano?.descricao}</td>
-              <td>{new Date(m.vencimento).toLocaleDateString('pt-BR')}</td>
+              <td>{formatarDataBR(m.vencimento)}</td>
               <td>R$ {m.valor.toFixed(2)}</td>
               <td>{m.situacao}</td>
               <td>

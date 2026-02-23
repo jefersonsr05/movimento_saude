@@ -4,6 +4,8 @@ ARG VITE_API_URL=http://localhost:3001
 ENV VITE_API_URL=$VITE_API_URL
 COPY package*.json ./
 RUN npm ci
+# ARG CACHEBUST: passe --build-arg CACHEBUST=$(date +%s) para forçar rebuild ao atualizar código
+ARG CACHEBUST
 COPY . .
 RUN npm run build
 

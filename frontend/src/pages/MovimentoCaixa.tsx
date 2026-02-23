@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api, type MovimentoCaixa, type FormaPagamento, type Cliente } from '../services/api'
+import { InputDataBR } from '../components/InputDataBR'
+import { formatarDataBR } from '../utils/date'
 
 export default function MovimentoCaixa() {
   const [dataInicio, setDataInicio] = useState(new Date().toISOString().slice(0, 7) + '-01')
@@ -66,7 +68,7 @@ export default function MovimentoCaixa() {
         <form onSubmit={submit}>
           <div className="form-group">
             <label>Data</label>
-            <input type="date" value={form.data ? String(form.data).slice(0, 10) : ''} onChange={(e) => setForm({ ...form, data: e.target.value })} required />
+            <InputDataBR value={form.data ? String(form.data).slice(0, 10) : ''} onChange={(v) => setForm({ ...form, data: v })} required />
           </div>
           <div className="form-group">
             <label>Descrição</label>
@@ -103,9 +105,9 @@ export default function MovimentoCaixa() {
 
       <div className="card">
         <label>Data início</label>
-        <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} />
+        <InputDataBR value={dataInicio} onChange={setDataInicio} />
         <label>Data fim</label>
-        <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} />
+        <InputDataBR value={dataFim} onChange={setDataFim} />
         <label>Tipo</label>
         <select value={tipo} onChange={(e) => setTipo(e.target.value)}>
           <option value="">Todos</option>
@@ -127,7 +129,7 @@ export default function MovimentoCaixa() {
         <tbody>
           {movimentos?.map((m) => (
             <tr key={m.id}>
-              <td>{new Date(m.data).toLocaleDateString('pt-BR')}</td>
+              <td>{formatarDataBR(m.data)}</td>
               <td>{m.descricao}</td>
               <td>{m.cliente?.nomeCompleto ?? '-'}</td>
               <td>R$ {m.valor.toFixed(2)}</td>

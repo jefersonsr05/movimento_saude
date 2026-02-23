@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../services/api'
+import { InputDataBR } from '../components/InputDataBR'
+import { formatarDataBR } from '../utils/date'
 
 export default function Relatorios() {
   const [dataInicio, setDataInicio] = useState(new Date().toISOString().slice(0, 7) + '-01')
@@ -39,9 +41,9 @@ export default function Relatorios() {
       <h1>Relatórios</h1>
       <div className="card">
         <label>Data início</label>
-        <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} />
+        <InputDataBR value={dataInicio} onChange={setDataInicio} />
         <label>Data fim</label>
-        <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} />
+        <InputDataBR value={dataFim} onChange={setDataFim} />
         <button className="btn btn-secondary" onClick={() => setAba('previsao')}>Previsão de caixa</button>
         <button className="btn btn-secondary" onClick={() => setAba('recebimentos')}>Recebimentos</button>
       </div>
@@ -52,7 +54,7 @@ export default function Relatorios() {
           {isLoading && <p>Carregando...</p>}
           {previsao && (
             <>
-              <p><strong>Período:</strong> {new Date(previsao.periodo.dataInicio).toLocaleDateString('pt-BR')} a {new Date(previsao.periodo.dataFim).toLocaleDateString('pt-BR')}</p>
+              <p><strong>Período:</strong> {formatarDataBR(previsao.periodo.dataInicio)} a {formatarDataBR(previsao.periodo.dataFim)}</p>
               <p>Entradas realizadas: R$ {previsao.realizados.entradas.toFixed(2)}</p>
               <p>Saídas realizadas: R$ {previsao.realizados.saidas.toFixed(2)}</p>
               <p>Total realizado (entradas - saídas): R$ {previsao.realizados.total.toFixed(2)}</p>
@@ -69,7 +71,7 @@ export default function Relatorios() {
           {isLoading && <p>Carregando...</p>}
           {recebimentos && (
             <>
-              <p><strong>Período:</strong> {new Date(recebimentos.periodo.dataInicio).toLocaleDateString('pt-BR')} a {new Date(recebimentos.periodo.dataFim).toLocaleDateString('pt-BR')}</p>
+              <p><strong>Período:</strong> {formatarDataBR(recebimentos.periodo.dataInicio)} a {formatarDataBR(recebimentos.periodo.dataFim)}</p>
               <p>Total entradas: R$ {recebimentos.totalEntradas.toFixed(2)}</p>
               <p>Total saídas: R$ {recebimentos.totalSaidas.toFixed(2)}</p>
               <p><strong>Saldo do caixa no período:</strong> R$ {recebimentos.saldoCaixa.toFixed(2)}</p>
