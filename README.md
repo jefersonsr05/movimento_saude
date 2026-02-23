@@ -25,21 +25,21 @@ docker compose up --build
 
 Os dados ficam persistidos em um volume do Docker (`backend-data`). Para parar: `Ctrl+C` e depois `docker compose down`.
 
-**Frontend não atualiza após mudanças no código?** O Docker pode estar usando cache do build. Reconstrua o frontend sem cache e suba de novo:
+**Frontend no Docker mostra versão antiga (enquanto `npm run dev` mostra o correto)?**  
+O Docker usa a pasta do projeto como contexto de build. Rode **sempre** `docker compose` na **mesma pasta** em que você roda `npm run dev` (a pasta que tem o código atual). Ex.: se você desenvolve no WSL em `/home/jeffs/movimento_saude`, use o terminal WSL nessa pasta para rodar o Docker; se usa Windows em `C:\projeto\movimento_saude`, use essa pasta no PowerShell.
+
+Depois, limpe a imagem do frontend e reconstrua sem cache:
 
 ```bash
+docker compose down
+docker rmi movimento_saude-frontend 2>/dev/null || true
 docker compose build --no-cache frontend
 docker compose up -d --force-recreate
 ```
 
-Ou force um rebuild passando um argumento que muda a cada vez (ex.: timestamp):
+Para conferir qual build está no ar, abra **http://localhost:3000/build.txt** no navegador: deve aparecer a data/hora do último build. Se for antiga, o build ainda está vindo de outro diretório ou de cache.
 
-```bash
-docker compose build --build-arg CACHEBUST=$(date +%s) frontend
-docker compose up -d --force-recreate
-```
-
-Depois, no navegador, use **Ctrl+Shift+R** (ou limpe o cache) para garantir que a página não esteja em cache.
+No navegador, use **Ctrl+Shift+R** (ou limpe o cache) ao abrir http://localhost:3000 para não carregar arquivos em cache.
 
 ## Rodando sem Docker (desenvolvimento)
 

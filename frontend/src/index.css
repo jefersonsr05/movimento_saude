@@ -50,3 +50,79 @@ h1, h2 { margin-top: 0; }
 .objetivos-checklist .form-check {
   display: inline-flex;
 }
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+.modal-content {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  max-width: 560px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 0.25rem;
+}
+.modal-close:hover {
+  color: #111;
+}
+.modal-body {
+  padding: 1.25rem;
+  overflow-y: auto;
+}
+.crud-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+.crud-toolbar .search-input {
+  flex: 1;
+  min-width: 200px;
+  max-width: 320px;
+}
+.crud-toolbar .btn {
+  flex-shrink: 0;
+}
+.crud-toolbar-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.crud-toolbar-filters .form-group input,
+.crud-toolbar-filters .form-group select {
+  max-width: 140px;
+}

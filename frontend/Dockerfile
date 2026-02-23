@@ -7,6 +7,8 @@ RUN npm ci
 # ARG CACHEBUST: passe --build-arg CACHEBUST=$(date +%s) para forçar rebuild ao atualizar código
 ARG CACHEBUST
 COPY . .
+# Gera build.txt com data/hora para conferir no navegador (http://localhost:3000/build.txt)
+RUN mkdir -p public && echo "Build: $(date -Iseconds) - Context: $(pwd)" > public/build.txt
 RUN npm run build
 
 FROM nginx:alpine
