@@ -1,9 +1,21 @@
 /**
  * Formata data para exibição no padrão brasileiro DD/MM/AAAA.
+ * Strings YYYY-MM-DD são tratadas como data local (evita -1 dia por causa do fuso).
  */
 export function formatarDataBR(val: string | Date | null | undefined): string {
   if (val == null) return ''
-  const d = typeof val === 'string' ? new Date(val) : val
+  let d: Date
+  if (typeof val === 'string') {
+    const match = val.match(/^(\d{4})-(\d{2})-(\d{2})/)
+    if (match) {
+      const [, y, m, day] = match
+      d = new Date(parseInt(y!, 10), parseInt(m!, 10) - 1, parseInt(day!, 10))
+    } else {
+      d = new Date(val)
+    }
+  } else {
+    d = val
+  }
   if (Number.isNaN(d.getTime())) return ''
   const day = String(d.getDate()).padStart(2, '0')
   const month = String(d.getMonth() + 1).padStart(2, '0')

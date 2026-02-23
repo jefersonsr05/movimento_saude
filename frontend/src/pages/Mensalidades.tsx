@@ -46,17 +46,25 @@ export default function Mensalidades() {
     <div>
       <h1>Mensalidades</h1>
       <div className="card">
-        <label>Data início</label>
-        <InputDataBR value={dataInicio} onChange={setDataInicio} />
-        <label>Data fim</label>
-        <InputDataBR value={dataFim} onChange={setDataFim} />
-        <label>Situação</label>
-        <select value={situacao} onChange={(e) => setSituacao(e.target.value)}>
-          <option value="">Todas</option>
-          <option value="NaoPago">Não pago</option>
-          <option value="Pago">Pago</option>
-          <option value="Bonificada">Bonificada</option>
-        </select>
+        <div className="crud-toolbar-filters">
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label>Data início</label>
+            <InputDataBR value={dataInicio} onChange={setDataInicio} />
+          </div>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label>Data fim</label>
+            <InputDataBR value={dataFim} onChange={setDataFim} />
+          </div>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label>Situação</label>
+            <select value={situacao} onChange={(e) => setSituacao(e.target.value)}>
+              <option value="">Todas</option>
+              <option value="NaoPago">Não pago</option>
+              <option value="Pago">Pago</option>
+              <option value="Bonificada">Bonificada</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       {pagamentoModal && (

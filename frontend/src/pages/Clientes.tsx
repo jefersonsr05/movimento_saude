@@ -5,7 +5,7 @@ import { InputDataBR } from '../components/InputDataBR'
 import { Modal } from '../components/Modal'
 
 const TIPOS = ['Cliente', 'Fornecedor', 'Ambos']
-const SEXOS = ['M', 'F', 'Outro']
+const SEXOS = ['Masculino', 'Feminino', 'Não informado']
 const NIVEL = ['Nunca', 'Iniciante', 'Intermediario', 'Avancado']
 const FREQ = [
   { value: 'TresPorSemana', label: '3X por semana' },
