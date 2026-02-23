@@ -1,0 +1,124 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// SQLite não suporta enums nativos; usamos String. Valores: Cliente|Fornecedor|Ambos, M|F|Outro, etc.
+
+model Cliente {
+  id             String    @id @default(cuid())
+  tipo           String    // TipoPessoa
+  nomeCompleto   String
+  dataNascimento DateTime
+  sexo           String    // Sexo: M, F, Outro
+  cpf            String    @unique
+  contato        String?
+  endereco       String?
+  planoId        String?
+  ativo          Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  plano           Plano?            @relation(fields: [planoId], references: [id])
+  fichaSaude      FichaSaude?
+  mensalidades    Mensalidade[]
+  movimentosCaixa MovimentoCaixa[]
+
+  @@index([ativo])
+  @@index([planoId])
+}
+
+model FichaSaude {
+  id                          String   @id @default(cuid())
+  clienteId                   String   @unique
+  doencaDiagnosticada         Boolean  @default(false)
+  doencaDiagnosticadaQual     String?
+  medicamentosContinuos       Boolean  @default(false)
+  medicamentosContinuosQual   String?
+  lesaoCirurgiaOrtopedia      Boolean  @default(false)
+  lesaoCirurgiaOrtopediaQual  String?
+  problemasCardiacosDiabetes  Boolean  @default(false)
+  problemasCardiacosQual      String?
+  restricaoMedica             Boolean  @default(false)
+  restricaoMedicaQual         String?
+  objetivos                   String   // JSON array
+  objetivoOutro               String?
+  nivelAtividade              String   // Nunca, Iniciante, Intermediario, Avancado
+  frequenciaDesejada          String   // TresPorSemana, CincoPorSemana, SeisPorSemana
+  dataFicha                   DateTime @default(now())
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+
+  cliente Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+}
+
+model Plano {
+  id                  String   @id @default(cuid())
+  descricao           String
+  valor               Float
+  numeroTreinosSemana Int
+  tipoAssinatura      String   // Mensal, Trimestral, Semestral, Anual
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  clientes     Cliente[]
+  mensalidades Mensalidade[]
+
+  @@index([tipoAssinatura])
+}
+
+model Mensalidade {
+  id          String   @id @default(cuid())
+  dataGeracao DateTime @default(now())
+  clienteId   String
+  planoId     String
+  valor       Float
+  vencimento  DateTime
+  situacao    String   @default("NaoPago") // Pago, NaoPago, Bonificada
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cliente     Cliente          @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  plano       Plano            @relation(fields: [planoId], references: [id])
+  movimentos  MovimentoCaixa[]
+
+  @@unique([clienteId, planoId, vencimento])
+  @@index([vencimento])
+  @@index([situacao])
+  @@index([clienteId])
+}
+
+model FormaPagamento {
+  id          String   @id @default(cuid())
+  descricao   String
+  tipo        String   // Dinheiro, CartaoCredito, CartaoDebito, PIX, Transferencia
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  movimentos MovimentoCaixa[]
+}
+
+model MovimentoCaixa {
+  id                String   @id @default(cuid())
+  data              DateTime
+  descricao         String
+  clienteId         String?
+  valor             Float
+  tipo              String   // Entrada, Saida
+  formaPagamentoId  String
+  mensalidadeId     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  cliente        Cliente?         @relation(fields: [clienteId], references: [id])
+  formaPagamento FormaPagamento   @relation(fields: [formaPagamentoId], references: [id])
+  mensalidade     Mensalidade?     @relation(fields: [mensalidadeId], references: [id])
+
+  @@index([data])
+  @@index([tipo])
+  @@index([clienteId])
+}

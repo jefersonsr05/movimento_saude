@@ -1,0 +1,1 @@
+{"root":["./src/App.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/pages/Clientes.tsx","./src/pages/Dashboard.tsx","./src/pages/FormasPagamento.tsx","./src/pages/Mensalidades.tsx","./src/pages/MovimentoCaixa.tsx","./src/pages/Planos.tsx","./src/pages/Relatorios.tsx","./src/services/api.ts"],"version":"5.6.3"}
